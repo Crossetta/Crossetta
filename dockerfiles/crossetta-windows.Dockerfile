@@ -1,6 +1,8 @@
 FROM fedora:45
 
 RUN dnf -y --setopt=install_weak_deps=False install \
+	qpdf \
+	xxd \
 	glslc \
 	ccache \
 	mingw64-vulkan-loader \
