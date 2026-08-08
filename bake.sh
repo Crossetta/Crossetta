@@ -37,4 +37,4 @@ case "$1" in
 esac
 
 
-docker build --build-context qt="$HOME"/Qt/qt -t crossetta-"$OS_TYPE"-"$QT_VERSION":latest -f dockerfiles/crossetta-"$1".Dockerfile .
+docker build --build-context qt="$HOME"/Qt/qt -t crossetta/crossetta:"$OS_TYPE"-"$QT_VERSION"-latest -f dockerfiles/crossetta-"$1".Dockerfile .
