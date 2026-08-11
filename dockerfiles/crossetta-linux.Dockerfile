@@ -80,6 +80,8 @@ RUN apt-get update && apt-get install -y \
     bison \
     libudev-dev \
     libcanberra-dev \
+    qpdf \
+    xxd \
     && rm -rf /var/lib/apt/lists/*
 
 RUN --mount=type=cache,target=/root/.ccache \
