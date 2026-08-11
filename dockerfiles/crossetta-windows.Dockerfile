@@ -1,5 +1,8 @@
 FROM fedora:45
 
+ENV LC_ALL=C.UTF-8
+ENV LANG=C.UTF-8
+
 RUN dnf -y --setopt=install_weak_deps=False install \
 	qpdf \
 	xxd \
