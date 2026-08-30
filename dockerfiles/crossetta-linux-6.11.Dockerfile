@@ -9,6 +9,7 @@ RUN dnf -y --setopt=install_weak_deps=False install \
 	vulkan-utility-libraries-devel \
 	qt6-qtdeclarative-devel \
 	qt6-qtimageformats \
+	qt6-qtmultimedia-devel \
 	qt6-qtshadertools-devel \
 	qt6-qtsvg-devel  \
 	gcc \

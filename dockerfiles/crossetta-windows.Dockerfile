@@ -13,6 +13,7 @@ RUN dnf -y --setopt=install_weak_deps=False install \
 	mingw64-adwaita-qt6 \
 	mingw64-qt6-qtdeclarative \
 	mingw64-qt6-qtimageformats \
+	mingw64-qt6-qtmultimedia \
 	mingw64-qt6-qtshadertools \
 	mingw64-qt6-qtsvg \
 	msitools \

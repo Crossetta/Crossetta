@@ -80,6 +80,13 @@ RUN apt-get update && apt-get install -y \
     bison \
     libudev-dev \
     libcanberra-dev \
+    libpipewire-0.3-dev \
+    libavformat-dev \
+    libavcodec-dev \
+    libswresample-dev \
+    libswscale-dev \
+    libavutil-dev \
+    libavcodec-extra \
     qpdf \
     xxd \
     && rm -rf /var/lib/apt/lists/*
@@ -108,26 +115,37 @@ RUN --mount=from=qt,target=/src/qt --mount=type=cache,target=/root/.ccache \
         -confirm-license \
         -release \
         -ccache \
+        -no-sbom \
         -xcb \
         -opengl \
+        -feature-pipewire \
+        -feature-ffmpeg \
+        -ffmpeg-deploy \
         -skip qt3d \
+        -skip qtactiveqt \
         -skip qtcharts \
+        -skip qtcoap \
         -skip qtdatavis3d \
         -skip qtgamepad \
         -skip qtgraphs \
+        -skip qtgrpc \
         -skip qtmqtt \
+        -skip qtopcua \
         -skip qtopenapi \
         -skip qtquick3d \
         -skip qtquick3dphysics \
         -skip qtquickeffectmaker \
         -skip qtremoteobjects \
+        -skip qtscxml \
         -skip qtsensors \
         -skip qtserialbus \
         -skip qtserialport \
         -skip qtspeech \
+        -skip qttasktree \
         -skip qtwebchannel \
         -skip qtwebengine \
         -skip qtwebsockets \
+        -skip qtwebview \
         -nomake examples \
         -nomake tests && \
     cmake --build . --parallel && \
