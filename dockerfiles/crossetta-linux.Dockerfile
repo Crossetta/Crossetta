@@ -1,6 +1,10 @@
 FROM ubuntu:22.04
 
 ARG CMAKE_VERSION="4.3.2"
+ARG AOM_VERSION="3.15.1"
+ARG STAV1_VERSION="4.2.0"
+ARG DAV1D_VERSION="1.5.4"
+ARG FFMPEG_VERSION="9.0.2"
 ARG VULKAN_VERSION="1.4.351"
 ARG GLSLC_VERSION="2026.2"
 ARG EXTRA_CMAKE_MODULES_VERSION="6.26.0"
@@ -81,12 +85,24 @@ RUN apt-get update && apt-get install -y \
     libudev-dev \
     libcanberra-dev \
     libpipewire-0.3-dev \
-    libavformat-dev \
-    libavcodec-dev \
     libswresample-dev \
     libswscale-dev \
-    libavutil-dev \
-    libavcodec-extra \
+    libass-dev \
+    libfreetype6-dev \
+    libgnutls28-dev \
+    libmp3lame-dev \
+    libsdl2-dev \
+    libtool \
+    libva-dev \
+    libvdpau-dev \
+    libvorbis-dev \
+    texinfo \
+    yasm \
+    nasm \
+    libunistring-dev \
+    libvpx-dev \
+    libopus-dev \
+    zlib1g-dev \
     qpdf \
     xxd \
     && rm -rf /var/lib/apt/lists/*
@@ -104,6 +120,75 @@ RUN --mount=type=cache,target=/root/.ccache \
     apt -y remove cmake cmake-data && \
     dpkg -i cmake_${CMAKE_VERSION}*.deb && \
     rm -rf /cmake-build
+
+# For wayland-protocols and dav1d.
+
+RUN python3 -m pip install meson==${MESON_VERSION} && \
+    ln -sT /usr/local/bin/meson /usr/bin/meson
+
+# FFMPEG
+
+RUN --mount=type=cache,target=/root/.ccache \
+    mkdir /aom-build && \
+    cd /aom-build && \
+    git clone --depth 1 --branch v${AOM_VERSION} https://aomedia.googlesource.com/aom && \
+    cd aom && \
+    mkdir build && \
+    cd build && \
+    cmake -G "Unix Makefiles" -DENABLE_TESTS=OFF -DENABLE_NASM=on .. && \
+    cmake --build . --parallel && \
+    checkinstall --install=no --nodoc --pkgname=libaom-dev --pkgversion=${AOM_VERSION} -y && \
+    dpkg -i libaom-dev_${AOM_VERSION}*.deb && \
+    rm -rf /aom-build
+
+RUN --mount=type=cache,target=/root/.ccache \
+    mkdir /svtav1-build && \
+    cd /svtav1-build && \
+    git clone --depth 1 --branch v${STAV1_VERSION} https://gitlab.com/AOMediaCodec/SVT-AV1.git && \
+    cd SVT-AV1 && \
+    mkdir build && \
+    cd build && \
+    cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DBUILD_DEC=OFF -DBUILD_SHARED_LIBS=OFF .. && \
+    cmake --build . --parallel && \
+    checkinstall --install=no --nodoc --pkgname=libsvtav1-dev --pkgversion=${STAV1_VERSION} -y && \
+    dpkg -i libsvtav1-dev_${STAV1_VERSION}*.deb && \
+    rm -rf /svtav1-build
+
+RUN --mount=type=cache,target=/root/.ccache \
+    mkdir /dav1d-build && \
+    cd /dav1d-build && \
+    git clone --depth 1 --branch ${DAV1D_VERSION} https://code.videolan.org/videolan/dav1d.git && \
+    cd dav1d && \
+    meson setup -Denable_tools=false -Denable_tests=false --default-library=static build && \
+    meson compile -C build && \
+    checkinstall --install=no --nodoc --pkgname=libdav1d-dev --pkgversion=${DAV1D_VERSION} -y meson install -C build && \
+    dpkg -i libdav1d-dev_${DAV1D_VERSION}*.deb && \
+    rm -rf /dav1d-build
+
+RUN --mount=type=cache,target=/root/.ccache \
+    mkdir /ffmpeg-build && \
+    cd /ffmpeg-build && \
+    git clone --depth=1 --branch n${FFMPEG_VERSION} https://git.ffmpeg.org/ffmpeg.git && \
+    cd ffmpeg && \
+    ./configure \
+        --pkg-config-flags="--static" \
+        --extra-libs="-lpthread -lm" \
+        --ld="g++" \
+        --bindir="/src/ffmpeg/bin" \
+        --enable-gnutls \
+        --enable-libaom \
+        --enable-libass \
+        --enable-libfreetype \
+        --enable-libmp3lame \
+        --enable-libopus \
+        --enable-libsvtav1 \
+        --enable-libdav1d \
+        --enable-libvorbis \
+        --enable-libvpx && \
+    make -j && \
+    checkinstall --install=no --nodoc --pkgname=ffmpeg --pkgversion=${FFMPEG_VERSION} -y && \
+    dpkg -i ffmpeg_${FFMPEG_VERSION}*.deb && \
+    rm -rf /ffmpeg-build
 
 # Mount local ./qt source tree into the container
 RUN --mount=from=qt,target=/src/qt --mount=type=cache,target=/root/.ccache \
@@ -217,9 +302,6 @@ RUN --mount=type=cache,target=/root/.ccache \
     checkinstall --install=no --nodoc --pkgname=extra-cmake-modules --pkgversion=${EXTRA_CMAKE_MODULES_VERSION} -y && \
     dpkg -i extra-cmake-modules_${EXTRA_CMAKE_MODULES_VERSION}*.deb && \
     rm -rf /extra-cmake-modules-build
-
-RUN python3 -m pip install meson==0.64.0 && \
-    ln -sT /usr/local/bin/meson /usr/bin/meson
 
 RUN --mount=type=cache,target=/root/.ccache \
     mkdir /wayland-protocols-build && \

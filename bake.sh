@@ -12,7 +12,7 @@ OS_TYPE="$1"
 case "$1" in
     linux)
         QT_VERSION=6.12
-        EPOCH=1
+        EPOCH=2
     ;;
     linux-6.11)
         QT_VERSION=6.11
